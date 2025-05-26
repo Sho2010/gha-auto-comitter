@@ -1,0 +1,7 @@
+*.log
+.DS_Store
+.terraform
+build
+dist
+node_modules
+schema
