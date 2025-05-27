@@ -51,10 +51,11 @@ jobs:
         with:
           list-files: json
           filters: |
-            all:
+            changed:
               - ${{ inputs.filter-pattern }}
 
-      - id: set-matrix
+      - name: List modified dirs
+        id: set-matrix
         run: |
           result=$(jq -c "map(capture(\"${{ inputs.filter-capture-regex }}\") | .a) | unique | { addon: . }" <<< '${{ steps.filter.outputs.all_files }}')
           echo "matrix=$result" >> $GITHUB_OUTPUT
