@@ -17,7 +17,7 @@ on:
       filter-pattern:
         required: false
         type: string
-        default: ''
+        default: './**'
         description: "Glob pattern to detect changes"
 
       filter-capture-regex:
