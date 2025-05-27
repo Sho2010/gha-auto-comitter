@@ -57,8 +57,8 @@ jobs:
       - name: List modified dirs
         id: set-matrix
         run: |
-          result=$(jq -c "map(capture(\"${{ inputs.filter-capture-regex }}\") | .a) | unique | { addon: . }" <<< '${{ steps.filter.outputs.all_files }}')
-          echo "debug input: ${{ inputs.filter-capture-regex }}"
+          result=$(jq -c "map(capture(\"${{ inputs.filter-capture-regex }}\") | .a) | unique | { addon: . }" <<< '${{ steps.filter.outputs.changed_files }}')
+          echo "debug changed_files: ${{ steps.filter.outputs.changed_files }}"
           echo "debug matrix=$result"
           echo "matrix=$result" >> $GITHUB_OUTPUT
 
