@@ -58,6 +58,7 @@ jobs:
         id: set-matrix
         run: |
           result=$(jq -c "map(capture(\"${{ inputs.filter-capture-regex }}\") | .a) | unique | { addon: . }" <<< '${{ steps.filter.outputs.all_files }}')
+          echo "debug input: ${{ inputs.filter-capture-regex }}"
           echo "debug matrix=$result"
           echo "matrix=$result" >> $GITHUB_OUTPUT
 
