@@ -1,0 +1,12 @@
+name: Make modified autocommit test
+
+on:
+  pull_request:
+
+jobs:
+  run-make:
+    uses: Sho2010/gha-auto-comitter/.github/workflows/make-modified-autocommit.yaml@v0.0.1
+    with:
+      ref: ${{ github.head_ref }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
