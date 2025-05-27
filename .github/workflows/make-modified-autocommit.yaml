@@ -38,11 +38,6 @@ on:
         default: "build(${{ matrix.addon }}): run `make` on ${{ matrix.addon }}"
         description: "Git commit message"
 
-    secrets:
-      GITHUB_TOKEN:
-        required: true
-        description: "GitHub token for checkout and commit"
-
 jobs:
   detect-modified-dirs:
     runs-on: ubuntu-latest
