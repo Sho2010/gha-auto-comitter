@@ -1,0 +1,100 @@
+name: Make modified auto commiter
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+        description: "Git ref to checkout and commit to (e.g. github.head_ref)"
+
+      base-path:
+        required: false
+        type: string
+        default: ""
+        description: "Prefix path to prepend to each addon directory"
+
+      filter-pattern:
+        required: false
+        type: string
+        default: '**'
+        description: "Glob pattern to detect changes"
+
+      filter-capture-regex:
+        required: false
+        type: string
+        default: '^(?<a>[^/]+)/'
+        description: "Regex to extract top-level directory names"
+
+      make-target:
+        required: false
+        type: string
+        default: ""
+        description: "Make target to run (e.g. 'generate', 'build')"
+
+      commit-message:
+        required: false
+        type: string
+        default: "build(${{ matrix.addon }}): run `make` on ${{ matrix.addon }}"
+        description: "Git commit message"
+
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+        description: "GitHub token for checkout and commit"
+
+jobs:
+  detect-modified-dirs:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: json
+          filters: |
+            all:
+              - ${{ inputs.filter-pattern }}
+
+      - id: set-matrix
+        run: |
+          result=$(jq -c "map(capture(\"${{ inputs.filter-capture-regex }}\") | .a) | unique | { addon: . }" <<< '${{ steps.filter.outputs.all_files }}')
+          echo "matrix=$result" >> $GITHUB_OUTPUT
+
+  run-make:
+    needs: detect-modified-dirs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.detect-modified-dirs.outputs.matrix) }}
+      max-parallel: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Run make on directory
+        run: |
+          dir="${{ inputs.base-path }}${{ matrix.addon }}"
+          echo "Running make in $dir"
+
+          if [[ ! -f "$dir/Makefile" ]]; then
+            echo "No Makefile found in $dir, skipping."
+            exit 0
+          fi
+
+          if [[ -z "${{ inputs.make-target }}" ]]; then
+            make -C "$dir"
+          else
+            make -C "$dir" "${{ inputs.make-target }}"
+          fi
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: ${{ inputs.commit-message }}
+          branch: ${{ inputs.ref }}
+          commit_user_name: github-actions
+          commit_user_email: github-actions[bot]@users.noreply.github.com
