@@ -35,7 +35,7 @@ on:
       commit-message:
         required: false
         type: string
-        default: "build(${{ matrix.addon }}): run `make` on ${{ matrix.addon }}"
+        default: "build: run `make` on ${{ matrix.addon }}"
         description: "Git commit message"
 
 jobs:
